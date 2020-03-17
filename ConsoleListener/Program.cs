@@ -35,7 +35,7 @@ namespace ConsoleListener
                 
             }
 
-            var tw = new StreamWriter("debug.log");
+            var tw = new StreamWriter(logFileName);
             DbgView dv = new DbgView(tw);
             dv.Start();
             Console.ReadLine();
