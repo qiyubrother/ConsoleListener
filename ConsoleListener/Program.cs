@@ -129,7 +129,7 @@ namespace ConsoleListener
                         accessor.ReadArray<byte>(0, buffer, 0, buffer.Length);
                         int processId = BitConverter.ToInt32(buffer, 0);
                         int terminator = Array.IndexOf<byte>(buffer, 0, 4);
-                        string msg = Encoding.UTF8.GetString(buffer, 4, (terminator < 0 ? buffer.Length : terminator) - 4);
+                        string msg = Encoding.Default.GetString(buffer, 4, (terminator < 0 ? buffer.Length : terminator) - 4);
                         if (ignoreContaintList.Count > 0)
                         {
                             foreach(var m in ignoreContaintList)
