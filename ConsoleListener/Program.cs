@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.MemoryMappedFiles;
 using System.Runtime.InteropServices;
@@ -6,13 +7,14 @@ using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Text;
 using System.Threading;
-
+using System.Xml;
 namespace ConsoleListener
 {
     class Program
     {
         [DllImport ("kernel32.dll", CharSet = CharSet.Auto)]
         public static extern void OutputDebugString(string message);
+
         static void Main(string[] args)
         {
             var tw = new StreamWriter("debug.log");
@@ -65,7 +67,22 @@ namespace ConsoleListener
             EventWaitHandle bufferReadyEvent = null;
             EventWaitHandle dataReadyEvent = null;
             MemoryMappedFile memoryMappedFile = null;
-
+            List<string> ignoreContaintList = new List<string>();
+            if (File.Exists("app.xml"))
+            {
+                var s = File.ReadAllText("app.xml");
+                var doc = new XmlDocument();
+                doc.LoadXml(s);
+                var nodes = doc.SelectNodes("Ignore/add");
+                foreach (XmlNode node in nodes)
+                {
+                    var a = node.Attributes["Containt"];
+                    if (a != null && a.Value.Trim() != string.Empty)
+                    {
+                        ignoreContaintList.Add(a.Value);
+                    }
+                }
+            }
             try
             {
                 bool createdNew;
@@ -95,9 +112,18 @@ namespace ConsoleListener
                         int processId = BitConverter.ToInt32(buffer, 0);
                         int terminator = Array.IndexOf<byte>(buffer, 0, 4);
                         string msg = Encoding.Default.GetString(buffer, 4, (terminator < 0 ? buffer.Length : terminator) - 4);
-                        writer.Write("[{0:00000}] {1}", processId, msg);
-                        Console.WriteLine("[{0:00000}] {1}", processId, msg);
-                        writer.Flush();
+                        if (ignoreContaintList.Count > 0 && !ignoreContaintList.Contains(msg))
+                        {
+                            writer.Write("[{0:00000}] {1}", processId, msg);
+                            Console.WriteLine("[{0:00000}] {1}", processId, msg);
+                            writer.Flush();
+                        }
+                        else
+                        {
+                            writer.Write("[{0:00000}] {1}", processId, msg);
+                            Console.WriteLine("[{0:00000}] {1}", processId, msg);
+                            writer.Flush();
+                        }
                         bufferReadyEvent.Set();
                     }
                 }
