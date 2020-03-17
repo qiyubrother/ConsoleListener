@@ -137,7 +137,7 @@ namespace ConsoleListener
                                 if (!msg.Contains(m))
                                 {
                                     writer.Write("[{0:00000}] {1}", processId, msg);
-                                    Console.WriteLine("[000000][{0:00000}] {1}", processId, msg);
+                                    Console.WriteLine("[{0:00000}] {1}", processId, msg);
                                     writer.Flush();
                                     break;
                                 }
@@ -146,7 +146,7 @@ namespace ConsoleListener
                         else if (ignoreContaintList.Count == 0)
                         {
                             writer.Write("[{0:00000}] {1}", processId, msg);
-                            Console.WriteLine("[000000][{0:00000}] {1}", processId, msg);
+                            Console.WriteLine("[{0:00000}] {1}", processId, msg);
                             writer.Flush();
                         }
                         bufferReadyEvent.Set();
