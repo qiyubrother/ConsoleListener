@@ -1,4 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Ignore>
-  <add Containt="Do not draw frame because HWND not set yet, consumer: 11987350 !!!!!" />
-</Ignore>
+<config>
+  <ignore>
+    <add Containt="Do not draw frame because HWND not set yet, consumer: 11987350 !!!!!" />
+  </ignore>
+  <out fileName="ConsoleListener.log" />
+</config>

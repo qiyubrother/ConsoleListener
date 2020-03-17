@@ -14,9 +14,27 @@ namespace ConsoleListener
     {
         [DllImport ("kernel32.dll", CharSet = CharSet.Auto)]
         public static extern void OutputDebugString(string message);
+        static string logFileName = "ConsoleListener.log";
 
         static void Main(string[] args)
         {
+            if (File.Exists("app.xml"))
+            {
+                var s = File.ReadAllText("app.xml");
+                var doc = new XmlDocument();
+                doc.LoadXml(s);
+                var nodes = doc.SelectNodes("config/out");
+                if (nodes.Count > 0)
+                {
+                    var a = nodes[0].Attributes["fileName"];
+                    if (a != null)
+                    {
+                        logFileName = a.Value;
+                    }
+                }
+                
+            }
+
             var tw = new StreamWriter("debug.log");
             DbgView dv = new DbgView(tw);
             dv.Start();
@@ -73,7 +91,7 @@ namespace ConsoleListener
                 var s = File.ReadAllText("app.xml");
                 var doc = new XmlDocument();
                 doc.LoadXml(s);
-                var nodes = doc.SelectNodes("Ignore/add");
+                var nodes = doc.SelectNodes("config/ignore/add");
                 foreach (XmlNode node in nodes)
                 {
                     var a = node.Attributes["Containt"];
