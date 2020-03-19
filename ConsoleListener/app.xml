@@ -5,10 +5,14 @@
     <add Containt="Do not draw frame because HWND not set yet, consumer:" />
   </ignore>
   <containt>
-	  <!-- 包含多个中的任意一条，支持“*” -->
+    <!-- 包含多个中的任意一条，支持“*” -->
     <add Containt="*" />
   </containt>
   <out fileName="ConsoleListener.log" />
+  <!--  Color range:
+		Black, DarkBlue, DarkGreen, DarkCyan, DarkRed, DarkMagenta, DarkYellow, Gray, DarkGray, Blue, Green, Cyan, Red, Magenta, Yellow, White 
+    -->
+  <color foregroundColor="Green" backgroundColor="Black" />
 </config>
 
 <!--   Processing logic

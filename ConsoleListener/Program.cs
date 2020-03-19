@@ -36,10 +36,27 @@ namespace ConsoleListener
                         logFileName = a.Value;
                     }
                 }
-                
+                nodes = doc.SelectNodes("config/color");
+                if (nodes.Count > 0)
+                {
+                    var fc = nodes[0].Attributes["foregroundColor"];
+                    if (fc != null)
+                    {
+                        if (Enum.TryParse<ConsoleColor>(fc.Value, out ConsoleColor c))
+                        {
+                            Console.ForegroundColor = c;
+                        }
+                    }
+                    var bc = nodes[0].Attributes["backgroundColor"];
+                    if (bc != null)
+                    {
+                        if (Enum.TryParse<ConsoleColor>(bc.Value, out ConsoleColor c))
+                        {
+                            Console.BackgroundColor = c;
+                        }
+                    }
+                }
             }
-            Console.ForegroundColor = ConsoleColor.Green;
-
             var tw = new StreamWriter(logFileName);
             DbgView dv = new DbgView(tw);
             dv.Start();
