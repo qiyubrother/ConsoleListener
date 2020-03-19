@@ -38,6 +38,7 @@ namespace ConsoleListener
                 }
                 
             }
+            Console.ForegroundColor = ConsoleColor.Green;
 
             var tw = new StreamWriter(logFileName);
             DbgView dv = new DbgView(tw);
