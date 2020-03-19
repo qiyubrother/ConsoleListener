@@ -1,7 +1,35 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
   <ignore>
+    <!-- 忽略多个中的任意一条。 -->
     <add Containt="Do not draw frame because HWND not set yet, consumer:" />
   </ignore>
+  <containt>
+	  <!-- 包含多个中的任意一条，支持“*” -->
+    <add Containt="*" />
+  </containt>
   <out fileName="ConsoleListener.log" />
 </config>
+
+<!--   Processing logic
+
+		if (ignoreList.Count > 0)
+		{
+			if (!ignoreList.Any(x=>msg.Contains(x)))
+			{
+				if (containtList.Count == 0 
+					|| containtList.Any(x => msg.Contains(x)) 
+					|| containtList.Any(x => "*"))
+				{
+					writer;
+				}
+			}
+		}
+		else if (ignoreList.Count == 0)
+		{
+			if (containtList.Count == 0 || containtList.Any(x => msg.Contains(x)))
+			{
+				writer;
+			}
+		}
+-->

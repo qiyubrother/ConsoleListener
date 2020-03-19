@@ -8,6 +8,10 @@ using System.Security.Principal;
 using System.Text;
 using System.Threading;
 using System.Xml;
+using System.Linq;
+using System.Xml.Linq;
+using System.Reflection;
+
 namespace ConsoleListener
 {
     class Program
@@ -20,7 +24,7 @@ namespace ConsoleListener
         {
             if (File.Exists("app.xml"))
             {
-                var s = File.ReadAllText("app.xml");
+                var s = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "app.xml"));
                 var doc = new XmlDocument();
                 doc.LoadXml(s);
                 var nodes = doc.SelectNodes("config/out");
@@ -85,10 +89,11 @@ namespace ConsoleListener
             EventWaitHandle bufferReadyEvent = null;
             EventWaitHandle dataReadyEvent = null;
             MemoryMappedFile memoryMappedFile = null;
-            List<string> ignoreContaintList = new List<string>();
+            List<string> ignoreContaintList = new List<string>();   /* 必须忽略 */
+            List<string> containtContaintList = new List<string>(); /* 必须包含 */
             if (File.Exists("app.xml"))
             {
-                var s = File.ReadAllText("app.xml");
+                var s = File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "app.xml"));
                 var doc = new XmlDocument();
                 doc.LoadXml(s);
                 var nodes = doc.SelectNodes("config/ignore/add");
@@ -98,6 +103,21 @@ namespace ConsoleListener
                     if (a != null && a.Value.Trim() != string.Empty)
                     {
                         ignoreContaintList.Add(a.Value);
+                    }
+                }
+                nodes = doc.SelectNodes("config/containt/add");
+                foreach (XmlNode node in nodes)
+                {
+                    var a = node.Attributes["Containt"];
+                    if (a != null && a.Value.Trim() != string.Empty)
+                    {
+                        if (a.Value.Trim() == "*")
+                        {
+                            // 如果包含任意，则忽略所有。
+                            containtContaintList.Clear();
+                            break;
+                        }
+                        containtContaintList.Add(a.Value);
                     }
                 }
             }
@@ -119,8 +139,8 @@ namespace ConsoleListener
                 memoryMappedFile = MemoryMappedFile.CreateNew("DBWIN_BUFFER", 4096, MemoryMappedFileAccess.ReadWrite, MemoryMappedFileOptions.None, memoryMapSecurity, System.IO.HandleInheritability.None);
 
                 bufferReadyEvent.Set();
-                this.writer.WriteLine("[ConsoleListener] Started.");
-                Console.WriteLine("[ConsoleListener] Started.");
+                writer.WriteLine($"[ConsoleListener] Started. Press enter key to exit.");
+                Console.WriteLine($"[ConsoleListener] Started. Press enter key to exit.");
                 using (var accessor = memoryMappedFile.CreateViewAccessor())
                 {
                     byte[] buffer = new byte[4096];
@@ -132,22 +152,24 @@ namespace ConsoleListener
                         string msg = Encoding.Default.GetString(buffer, 4, (terminator < 0 ? buffer.Length : terminator) - 4);
                         if (ignoreContaintList.Count > 0)
                         {
-                            foreach(var m in ignoreContaintList)
+                            if (!ignoreContaintList.Any(x=>msg.Contains(x)))
                             {
-                                if (!msg.Contains(m))
+                                if (containtContaintList.Count == 0 || containtContaintList.Any(x => msg.Contains(x)))
                                 {
                                     writer.Write("[{0:00000}] {1}", processId, msg);
                                     Console.WriteLine("[{0:00000}] {1}", processId, msg);
                                     writer.Flush();
-                                    break;
                                 }
                             }
                         }
                         else if (ignoreContaintList.Count == 0)
                         {
-                            writer.Write("[{0:00000}] {1}", processId, msg);
-                            Console.WriteLine("[{0:00000}] {1}", processId, msg);
-                            writer.Flush();
+                            if (containtContaintList.Count == 0 || containtContaintList.Any(x => msg.Contains(x)))
+                            {
+                                writer.Write("[{0:00000}] {1}", processId, msg);
+                                Console.WriteLine("[{0:00000}] {1}", processId, msg);
+                                writer.Flush();
+                            }
                         }
                         bufferReadyEvent.Set();
                     }
@@ -155,12 +177,12 @@ namespace ConsoleListener
             }
             catch (ThreadInterruptedException)
             {
-                this.writer.WriteLine("[ConsoleListener] Stopped.");
+                writer.WriteLine("[ConsoleListener] Stopped.");
                 Console.WriteLine("[ConsoleListener] Stopped.");
             }
             catch (Exception e)
             {
-                this.writer.WriteLine("[ConsoleListener] Error: " + e.Message);
+                writer.WriteLine("[ConsoleListener] Error: " + e.Message);
             }
             finally
             {
