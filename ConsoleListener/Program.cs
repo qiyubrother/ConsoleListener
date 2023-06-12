@@ -11,6 +11,7 @@ using System.Xml;
 using System.Linq;
 using System.Xml.Linq;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace ConsoleListener
 {
@@ -20,7 +21,22 @@ namespace ConsoleListener
         public static extern void OutputDebugString(string message);
         static string logFileName = "ConsoleListener.log";
 
-        static void Main(string[] args)
+		#region SetWindowPos
+		[DllImport("user32.dll", SetLastError = true)]
+		[return: MarshalAs(UnmanagedType.Bool)]
+		private static extern bool SetWindowPos(
+	        IntPtr hWnd,
+	        IntPtr hWndInsertAfter,
+	        int x,
+	        int y,
+	        int cx,
+	        int cy,
+	        int uFlags);
+		private const int HWND_TOPMOST = -1;
+		private const int SWP_NOMOVE = 0x0002;
+		private const int SWP_NOSIZE = 0x0001;
+		#endregion
+		static void Main(string[] args)
         {
             if (File.Exists("app.xml"))
             {
@@ -56,7 +72,25 @@ namespace ConsoleListener
                         }
                     }
                 }
-            }
+
+				nodes = doc.SelectNodes("config/style");
+				if (nodes.Count > 0)
+				{
+					var a = nodes[0].Attributes["topMost"];
+					if (a != null)
+					{
+                        if (a.Value == "true")
+                        {
+                            IntPtr hWnd = Process.GetCurrentProcess().MainWindowHandle;
+							SetWindowPos(hWnd,
+								new IntPtr(HWND_TOPMOST),
+								0, 0, 0, 0,
+								SWP_NOMOVE | SWP_NOSIZE);
+
+						}
+					}
+				}
+			}
             var tw = new StreamWriter(logFileName);
             DbgView dv = new DbgView(tw);
             dv.Start();

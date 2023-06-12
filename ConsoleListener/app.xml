@@ -13,6 +13,7 @@
 		Black, DarkBlue, DarkGreen, DarkCyan, DarkRed, DarkMagenta, DarkYellow, Gray, DarkGray, Blue, Green, Cyan, Red, Magenta, Yellow, White 
     -->
   <color foregroundColor="Green" backgroundColor="Black" />
+  <style topMost="true" />
 </config>
 
 <!--   Processing logic
